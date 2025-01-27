@@ -11,8 +11,8 @@ type JWTHandler struct {
 	Service *service.JWTService
 }
 
-func NewJwtHandler(secretKey string) *JWTHandler {
-	return &JWTHandler{Service: service.NewJwtService(secretKey)}
+func NewJwtHandler(secretKey string, refreshSecretKey string) *JWTHandler {
+	return &JWTHandler{Service: service.NewJwtService(secretKey, refreshSecretKey)}
 }
 
 func (h *JWTHandler) GenerateTokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -39,12 +39,14 @@ func (h *JWTHandler) GenerateTokenHandler(w http.ResponseWriter, r *http.Request
 		delete(payload, "expired_hour")
 	}
 
-	token, err := h.Service.GenerateToken(payload, expired)
-	if err != nil {
+	accessToken, errToken := h.Service.GenerateAccessToken(payload, expired)
+	refreshToken, errRefresh := h.Service.GenerateRefreshToken(payload)
+
+	if errToken != nil || errRefresh != nil {
 		utils.ErrorResponse(w, "failed generate token", http.StatusInternalServerError)
 
 	} else {
-		data := map[string]interface{}{"token": token}
+		data := map[string]interface{}{"access_token": accessToken, "refresh_token": refreshToken}
 		utils.SuccessResponse(w, data)
 	}
 }

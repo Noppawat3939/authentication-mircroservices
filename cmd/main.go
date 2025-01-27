@@ -22,10 +22,11 @@ func main() {
 	port := viper.GetInt("app.port")
 
 	jwtSecret := viper.GetString("app.jwt_secret")
+	jwtRefreshSecret := viper.GetString("app.jwt_refresh_secret")
 
 	address := fmt.Sprintf(":%d", port)
 
-	jwtHandler := handler.NewJwtHandler(jwtSecret)
+	jwtHandler := handler.NewJwtHandler(jwtSecret, jwtRefreshSecret)
 
 	r := mux.NewRouter().StrictSlash(false)
 
