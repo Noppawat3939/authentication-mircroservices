@@ -2,39 +2,35 @@ package main
 
 import (
 	"auth-microservice/internal/handler"
-	"auth-microservice/internal/router"
-	"auth-microservice/internal/service"
 	"fmt"
 	"net/http"
 
+	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
 )
 
 func initializeConfig() {
-	viper.SetDefault("app.port", 8000)
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
 	viper.AutomaticEnv()
+	viper.ReadInConfig()
 }
 
 func main() {
 	initializeConfig()
 
 	port := viper.GetInt("app.port")
-	address := fmt.Sprintf(":%d", port)
 
 	jwtSecret := viper.GetString("app.jwt_secret")
 
-	fmt.Print(1, jwtSecret)
+	address := fmt.Sprintf(":%d", port)
 
-	jwtService := &service.JWTService{
-		SecretKey: "your-secret-key",
-	}
+	jwtHandler := handler.NewJwtHandler(jwtSecret)
 
-	jwtHandler := &handler.JWTHandler{
-		Service: jwtService,
-	}
+	r := mux.NewRouter().StrictSlash(false)
 
-	r := router.JwtRouter(jwtHandler)
+	r.HandleFunc("/jwt/generate", jwtHandler.GenerateTokenHandler)
 
-	fmt.Printf("🚀 Server is running on port %d\n", port)
+	fmt.Printf("🚀 Server is running port %d\n", port)
 	http.ListenAndServe(address, r)
 }
