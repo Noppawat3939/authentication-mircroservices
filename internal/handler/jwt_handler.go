@@ -2,8 +2,8 @@ package handler
 
 import (
 	"auth-microservice/internal/service"
+	"auth-microservice/utils"
 	"encoding/json"
-	"fmt"
 	"net/http"
 )
 
@@ -11,31 +11,42 @@ type JWTHandler struct {
 	Service *service.JWTService
 }
 
+func NewJwtHandler(secretKey string, refreshSecretKey string) *JWTHandler {
+	return &JWTHandler{Service: service.NewJwtService(secretKey, refreshSecretKey)}
+}
+
 func (h *JWTHandler) GenerateTokenHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
+		utils.ErrorResponse(w, "invalid request method", http.StatusMethodNotAllowed)
+
 		return
 	}
 
-	var payload struct {
-		Email    string `json:"email"`
-		Username string `json:"username"`
-		Expired  *int64 `json:"expired_hour,omitempty"`
-	}
+	var payload map[string]interface{}
 
 	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		http.Error(w, "Invalid JSON payload", http.StatusBadRequest)
+		utils.ErrorResponse(w, "body should be object value", http.StatusBadRequest)
 		return
 	}
 
-	token, err := h.Service.GenerateToken(payload.Email, payload.Username, payload.Expired)
-	if err != nil {
-		http.Error(w, fmt.Sprintf("Error generating token: %v", err), http.StatusInternalServerError)
-		return
+	var expired *int64
+
+	if val, ok := payload["expired_hour"]; ok {
+		if hours, ok := val.(float64); ok {
+			exp := int64(hours)
+			expired = &exp
+		}
+		delete(payload, "expired_hour")
 	}
 
-	response := map[string]interface{}{"token": token, "success": true}
+	accessToken, errToken := h.Service.GenerateAccessToken(payload, expired)
+	refreshToken, errRefresh := h.Service.GenerateRefreshToken(payload)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	if errToken != nil || errRefresh != nil {
+		utils.ErrorResponse(w, "failed generate token", http.StatusInternalServerError)
+
+	} else {
+		data := map[string]interface{}{"access_token": accessToken, "refresh_token": refreshToken}
+		utils.SuccessResponse(w, data)
+	}
 }
