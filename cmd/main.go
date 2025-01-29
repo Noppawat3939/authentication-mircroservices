@@ -1,37 +1,24 @@
 package main
 
 import (
-	"auth-microservice/internal/handler"
-	"fmt"
-	"net/http"
-
-	"github.com/gorilla/mux"
-	"github.com/spf13/viper"
+	"github.com/gofiber/fiber/v2"
 )
 
-func initializeConfig() {
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
-	viper.AutomaticEnv()
-	viper.ReadInConfig()
-}
-
 func main() {
-	initializeConfig()
 
-	port := viper.GetInt("app.port")
+	app := fiber.New()
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello, World!")
+	})
 
-	jwtSecret := viper.GetString("app.jwt_secret")
-	jwtRefreshSecret := viper.GetString("app.jwt_refresh_secret")
+	// jwtSecret := viper.GetString("app.jwt_secret")
+	// jwtRefreshSecret := viper.GetString("app.jwt_refresh_secret")
 
-	address := fmt.Sprintf(":%d", port)
+	// jwtHandler := handler.NewJwtHandler(jwtSecret, jwtRefreshSecret)
 
-	jwtHandler := handler.NewJwtHandler(jwtSecret, jwtRefreshSecret)
+	// r.HandleFunc("/jwt/generate", jwtHandler.GenerateTokenHandler)
+	// r.HandleFunc("/jwt/verify", jwtHandler.Verify)
 
-	r := mux.NewRouter().StrictSlash(false)
-
-	r.HandleFunc("/jwt/generate", jwtHandler.GenerateTokenHandler)
-
-	fmt.Printf("🚀 Server is running port %d\n", port)
-	http.ListenAndServe(address, r)
+	// http.ListenAndServe(address, r)
+	app.Listen(":8000")
 }

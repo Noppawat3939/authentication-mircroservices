@@ -50,3 +50,7 @@ func (h *JWTHandler) GenerateTokenHandler(w http.ResponseWriter, r *http.Request
 		utils.SuccessResponse(w, data)
 	}
 }
+
+func (h *JWTHandler) Verify(w http.ResponseWriter, r *http.Request) {
+	utils.SuccessResponse(w, nil)
+}
