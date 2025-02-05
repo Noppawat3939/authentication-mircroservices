@@ -1,11 +1,13 @@
 package routes
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"auth-microservice/app/controllers"
 
-func JwtRoutes(a *fiber.App) {
-	route := a.Group("/api/v1/jwt")
+	"github.com/gofiber/fiber/v2"
+)
 
-	route.Post("/generate", func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"success": true})
-	})
+func JwtRoutes(router fiber.Router) {
+	r := router.Group("jwt")
+
+	r.Post("/generate", controllers.GetJwtToken)
 }
