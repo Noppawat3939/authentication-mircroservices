@@ -11,14 +11,5 @@ func main() {
 		return c.SendString("Hello, World!")
 	})
 
-	// jwtSecret := viper.GetString("app.jwt_secret")
-	// jwtRefreshSecret := viper.GetString("app.jwt_refresh_secret")
-
-	// jwtHandler := handler.NewJwtHandler(jwtSecret, jwtRefreshSecret)
-
-	// r.HandleFunc("/jwt/generate", jwtHandler.GenerateTokenHandler)
-	// r.HandleFunc("/jwt/verify", jwtHandler.Verify)
-
-	// http.ListenAndServe(address, r)
 	app.Listen(":8000")
 }
