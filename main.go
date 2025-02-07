@@ -5,6 +5,7 @@ import (
 	"auth-microservice/pkg/routes"
 
 	"github.com/gofiber/fiber/v2"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
