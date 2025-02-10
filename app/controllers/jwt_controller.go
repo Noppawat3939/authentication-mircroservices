@@ -2,10 +2,7 @@ package controllers
 
 import (
 	"auth-microservice/app/services"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -19,19 +16,6 @@ func GetJwtToken(c *fiber.Ctx) error {
 
 	expiredHour := 24
 
-	hash := sha256.New()
-
-	refresh := "refresh_token_secret_key" + time.Now().String()
-
-	_, err := hash.Write([]byte(refresh))
-
-	if err != nil {
-		return err
-	}
-
-	expireTime := fmt.Sprint(time.Now().Add(time.Hour * time.Duration(3)).Unix())
-	t := hex.EncodeToString(hash.Sum(nil)) + "." + expireTime
-
 	if expHrs, ok := body["expired_hour"].(float64); ok {
 		expiredHour = int(expHrs)
 		if expiredHour <= 0 {
@@ -39,6 +23,7 @@ func GetJwtToken(c *fiber.Ctx) error {
 		}
 	}
 
+	delete(body, "expired_hour")
 	services.GenerateNewToken(body, expiredHour)
 
 	token, err := services.GenerateNewToken(body, expiredHour)
@@ -51,5 +36,18 @@ func GetJwtToken(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"code": 200, "success": true, "data": fiber.Map{"access_token": token, "t": t}})
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"code": 200, "success": true, "data": fiber.Map{"access_token": token}})
+}
+
+func VerifyToken(c *fiber.Ctx) error {
+	authorizeation := c.Get("Authorization")
+
+	valid, claims, err := services.ValidateToken(authorizeation)
+
+	if !valid {
+		fmt.Print(err)
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{"code": 401, "success": false, "message": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"code": 200, "success": true, "data": claims})
 }

@@ -10,4 +10,5 @@ func JwtRoutes(router fiber.Router) {
 	r := router.Group("jwt")
 
 	r.Post("/generate", controllers.GetJwtToken)
+	r.Post("/verify", controllers.VerifyToken)
 }
