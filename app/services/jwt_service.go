@@ -22,3 +22,15 @@ func GenerateNewToken(payload map[string]interface{}, expiredInHours int) (strin
 
 	return tokenString, nil
 }
+
+func VerifyToken(tokenString string) (bool, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("JWT_SECRET")), nil
+	})
+
+	if err != nil {
+		return false, err
+	}
+
+	return token.Valid, nil
+}
