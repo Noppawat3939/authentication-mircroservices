@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"auth-microservice/app/services"
-	"fmt"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
@@ -58,7 +57,6 @@ func VerifyToken(c *fiber.Ctx) error {
 	valid, claims, err := services.ValidateToken(authorizeation, secretKey)
 
 	if !valid {
-		fmt.Print(err)
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{"code": 401, "success": false, "message": err.Error()})
 	}
 
