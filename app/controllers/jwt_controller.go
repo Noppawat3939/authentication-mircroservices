@@ -3,6 +3,7 @@ package controllers
 import (
 	"auth-microservice/app/services"
 	"fmt"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -27,7 +28,6 @@ func GetJwtToken(c *fiber.Ctx) error {
 	services.GenerateNewToken(body, expiredHour)
 
 	token, err := services.GenerateNewToken(body, expiredHour)
-
 	if err != nil {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{
 			"code":    500,
@@ -36,13 +36,24 @@ func GetJwtToken(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"code": 200, "success": true, "data": fiber.Map{"access_token": token}})
+	refresh, err := services.GenerateRefreshToken(body)
+	if err != nil {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+			"code":    500,
+			"success": false,
+			"message": "could not generate refresh_token",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"code": 200, "success": true, "data": fiber.Map{"access_token": token, "refresh_token": refresh}})
 }
 
 func VerifyToken(c *fiber.Ctx) error {
 	authorizeation := c.Get("Authorization")
 
-	valid, claims, err := services.ValidateToken(authorizeation)
+	secretKey := os.Getenv("JWT_SECRET")
+
+	valid, claims, err := services.ValidateToken(authorizeation, secretKey)
 
 	if !valid {
 		fmt.Print(err)

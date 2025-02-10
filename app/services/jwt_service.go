@@ -23,9 +23,25 @@ func GenerateNewToken(payload map[string]interface{}, expiredInHours int) (strin
 	return tokenString, nil
 }
 
-func ValidateToken(tokenString string) (bool, jwt.MapClaims, error) {
+func GenerateRefreshToken(payload map[string]interface{}) (string, error) {
+	secret := os.Getenv("JWT_REFRESH_SECRET")
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims(payload))
+	exp := time.Now().Add(time.Duration(72) * time.Hour).Unix()
+
+	token.Claims.(jwt.MapClaims)["exp"] = exp
+
+	tokenString, err := token.SignedString([]byte(secret))
+
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
+}
+
+func ValidateToken(tokenString string, secretKey string) (bool, jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return []byte(os.Getenv("JWT_SECRET")), nil
+		return []byte(secretKey), nil
 	})
 
 	if err != nil {
