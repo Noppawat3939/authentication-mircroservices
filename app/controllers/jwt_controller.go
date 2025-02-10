@@ -45,7 +45,9 @@ func GetJwtToken(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"code": 200, "success": true, "data": fiber.Map{"access_token": token, "refresh_token": refresh}})
+	data := fiber.Map{"access_token": token, "refresh_token": refresh}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"code": 200, "success": true, "data": data})
 }
 
 func VerifyToken(c *fiber.Ctx) error {
