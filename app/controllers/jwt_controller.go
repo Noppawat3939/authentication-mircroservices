@@ -2,16 +2,18 @@ package controllers
 
 import (
 	"auth-microservice/app/services"
+	"auth-microservice/models"
+	u "auth-microservice/utils"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
 )
 
 func GetJwtToken(c *fiber.Ctx) error {
-	var body map[string]interface{}
+	var body map[string]any
 
 	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"code": 400, "success": false, "message": "body invalid"})
+		return u.ErrRes(c, fiber.StatusBadRequest, "body invalid")
 	}
 
 	expiredHour := 24
@@ -19,7 +21,7 @@ func GetJwtToken(c *fiber.Ctx) error {
 	if expHrs, ok := body["expired_hour"].(float64); ok {
 		expiredHour = int(expHrs)
 		if expiredHour <= 0 {
-			return c.Status(fiber.StatusOK).JSON(fiber.Map{"code": 400, "success": false, "message": "expired_hour must be greater than 0"})
+			return u.ErrRes(c, fiber.StatusBadRequest, "expired_hour must be greater than 0")
 		}
 	}
 
@@ -28,37 +30,54 @@ func GetJwtToken(c *fiber.Ctx) error {
 
 	token, err := services.GenerateNewToken(body, expiredHour)
 	if err != nil {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"code":    500,
-			"success": false,
-			"message": "could not generate token",
-		})
+		return u.ErrRes(c, fiber.StatusInternalServerError, "could not generate token")
 	}
 
 	refresh, err := services.GenerateRefreshToken(body)
 	if err != nil {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
-			"code":    500,
-			"success": false,
-			"message": "could not generate refresh_token",
-		})
+		return u.ErrRes(c, fiber.StatusInternalServerError, "could not generate refresh_token")
 	}
 
 	data := fiber.Map{"access_token": token, "refresh_token": refresh}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"code": 200, "success": true, "data": data})
+	return u.OkRes(c, data)
 }
 
 func VerifyToken(c *fiber.Ctx) error {
-	authorizeation := c.Get("Authorization")
+	var body *models.JwtVerify
 
-	secretKey := os.Getenv("JWT_SECRET")
-
-	valid, claims, err := services.ValidateToken(authorizeation, secretKey)
-
-	if !valid {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"code": 401, "success": false, "message": err.Error()})
+	if err := c.BodyParser(&body); err != nil {
+		return u.ErrRes(c, fiber.StatusBadRequest, "body invalid")
 	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"code": 200, "success": true, "data": claims})
+	if body.Token == "" && body.RefreshToken == "" {
+		return u.ErrRes(c, fiber.StatusBadRequest, "body invalid")
+	}
+
+	tokenString, secret := extractTokenFromBody(body)
+
+	valid, claims, err := services.ValidateToken(tokenString, secret)
+
+	if !valid {
+		return u.ErrRes(c, fiber.StatusUnauthorized, err.Error())
+	}
+
+	return u.OkRes(c, claims)
+}
+
+func extractTokenFromBody(b *models.JwtVerify) (string, string) {
+	var tokenString string
+	var secretKey string
+
+	if b.Token != "" {
+		tokenString = b.Token
+		secretKey = os.Getenv("JWT_SECRET")
+	}
+
+	if b.RefreshToken != "" {
+		tokenString = b.RefreshToken
+		secretKey = os.Getenv("JWT_REFRESH_SECRET")
+	}
+
+	return tokenString, secretKey
 }

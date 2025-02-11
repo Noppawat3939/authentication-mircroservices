@@ -1,34 +1,23 @@
 package utils
 
 import (
-	"encoding/json"
-	"net/http"
+	"github.com/gofiber/fiber/v2"
 )
 
 type R map[string]interface{}
 
-func SuccessResponse(w http.ResponseWriter, data map[string]interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+func OkRes(c *fiber.Ctx, data any) error {
+	response := fiber.Map{"code": 200, "success": true}
 
-	response := R{
-		"success":        true,
-		"data":           data,
-		"success_status": http.StatusOK,
+	if data != nil {
+		response["data"] = data
 	}
 
-	json.NewEncoder(w).Encode(response)
+	return c.Status(fiber.StatusOK).JSON(response)
 }
 
-func ErrorResponse(w http.ResponseWriter, message string, statusCode int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
+func ErrRes(c *fiber.Ctx, statusCode int, message string) error {
+	response := fiber.Map{"code": statusCode, "success": false, "message": message}
 
-	response := R{
-		"success":      false,
-		"message":      message,
-		"error_status": statusCode,
-	}
-
-	json.NewEncoder(w).Encode(response)
+	return c.Status(fiber.StatusOK).JSON(response)
 }
