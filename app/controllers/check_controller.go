@@ -1,7 +1,13 @@
 package controllers
 
-import "github.com/gofiber/fiber/v2"
+import (
+	u "auth-microservice/utils"
+
+	"github.com/gofiber/fiber/v2"
+)
 
 func CheckServerRunning(c *fiber.Ctx) error {
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"code": 200, "success": true, "message": "server is running"})
+	data := fiber.Map{"message": "server is running"}
+
+	return u.OkRes(c, data)
 }
