@@ -9,5 +9,5 @@ import (
 func CheckServerRunning(c *fiber.Ctx) error {
 	data := fiber.Map{"message": "server is running"}
 
-	return u.OkRes(c, data)
+	return u.HttpOkRes(c, data)
 }

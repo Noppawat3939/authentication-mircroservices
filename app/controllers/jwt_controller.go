@@ -13,7 +13,7 @@ func GetJwtToken(c *fiber.Ctx) error {
 	var body map[string]any
 
 	if err := c.BodyParser(&body); err != nil {
-		return u.ErrRes(c, fiber.StatusBadRequest, "body invalid")
+		return u.HttpErrRes(c, fiber.StatusBadRequest, "body invalid")
 	}
 
 	expiredHour := 24
@@ -21,7 +21,7 @@ func GetJwtToken(c *fiber.Ctx) error {
 	if expHrs, ok := body["expired_hour"].(float64); ok {
 		expiredHour = int(expHrs)
 		if expiredHour <= 0 {
-			return u.ErrRes(c, fiber.StatusBadRequest, "expired_hour must be greater than 0")
+			return u.HttpErrRes(c, fiber.StatusBadRequest, "expired_hour must be greater than 0")
 		}
 	}
 
@@ -30,28 +30,28 @@ func GetJwtToken(c *fiber.Ctx) error {
 
 	token, err := services.GenerateNewToken(body, expiredHour)
 	if err != nil {
-		return u.ErrRes(c, fiber.StatusInternalServerError, "could not generate token")
+		return u.HttpErrRes(c, fiber.StatusInternalServerError, "could not generate token")
 	}
 
 	refresh, err := services.GenerateRefreshToken(body)
 	if err != nil {
-		return u.ErrRes(c, fiber.StatusInternalServerError, "could not generate refresh_token")
+		return u.HttpErrRes(c, fiber.StatusInternalServerError, "could not generate refresh_token")
 	}
 
 	data := fiber.Map{"access_token": token, "refresh_token": refresh}
 
-	return u.OkRes(c, data)
+	return u.HttpOkRes(c, data)
 }
 
 func VerifyToken(c *fiber.Ctx) error {
 	var body *models.JwtVerify
 
 	if err := c.BodyParser(&body); err != nil {
-		return u.ErrRes(c, fiber.StatusBadRequest, "body invalid")
+		return u.HttpErrRes(c, fiber.StatusBadRequest, "body invalid")
 	}
 
 	if body.Token == "" && body.RefreshToken == "" {
-		return u.ErrRes(c, fiber.StatusBadRequest, "body invalid")
+		return u.HttpErrRes(c, fiber.StatusBadRequest, "body invalid")
 	}
 
 	tokenString, secret := extractTokenFromBody(body)
@@ -59,10 +59,10 @@ func VerifyToken(c *fiber.Ctx) error {
 	valid, claims, err := services.ValidateToken(tokenString, secret)
 
 	if !valid {
-		return u.ErrRes(c, fiber.StatusUnauthorized, err.Error())
+		return u.HttpErrRes(c, fiber.StatusUnauthorized, err.Error())
 	}
 
-	return u.OkRes(c, claims)
+	return u.HttpOkRes(c, claims)
 }
 
 func extractTokenFromBody(b *models.JwtVerify) (string, string) {

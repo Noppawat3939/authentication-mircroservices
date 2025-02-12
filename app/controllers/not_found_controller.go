@@ -11,5 +11,5 @@ func EndpointNotFound(c *fiber.Ctx) error {
 	path := c.Path()
 
 	message := fmt.Sprintf("endpoint %s not found", path)
-	return u.ErrRes(c, fiber.StatusNotFound, message)
+	return u.HttpErrRes(c, fiber.StatusNotFound, message)
 }
