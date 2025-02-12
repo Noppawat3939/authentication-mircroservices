@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	u "auth-microservice/utils"
+	r "auth-microservice/internal/response"
 	"fmt"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,7 +9,7 @@ import (
 
 func EndpointNotFound(c *fiber.Ctx) error {
 	path := c.Path()
+	msg := fmt.Sprintf("endpoint %s not found", path)
 
-	message := fmt.Sprintf("endpoint %s not found", path)
-	return u.HttpErrRes(c, fiber.StatusNotFound, message)
+	return r.Error(c, fiber.StatusNotFound, msg)
 }
