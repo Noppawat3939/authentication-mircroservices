@@ -71,3 +71,34 @@ base URL `localhost:8000`
   }
 }
 ```
+
+#### 3. User Registration
+
+- **Endpoint:** `/api/v1/user/register`
+- **Method:** `POST`
+- **Description:** This endpoint insert user data in to database (MongoDB) but required 3 fields.
+
+- **Request Body:**
+
+```json
+{
+  "email": "example@gmail.com",
+  "username": "example_username",
+  "password": "example_paSsw0rD1"
+}
+```
+
+- **Response (Success - 200 OK):**
+
+```json
+{
+  "success": true,
+  "code": 200,
+  "data": {
+    "_id": "xxxx...", // id generated from MongoDB
+    "email": "example@gmail.com",
+    "username": "example_username",
+    "password": "xxxx..." // password hashed from api
+  }
+}
+```
