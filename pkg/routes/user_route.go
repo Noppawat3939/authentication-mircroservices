@@ -1,7 +1,7 @@
 package routes
 
 import (
-	ctl "auth-microservice/app/controllers"
+	"auth-microservice/app/controllers"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -9,6 +9,8 @@ import (
 func UserRoutes(router fiber.Router) {
 	r := router.Group("user")
 
-	r.Post("/register", ctl.RegisterUser)
-	r.Post("/login", ctl.LoginUser)
+	userController := controllers.NewUserController()
+
+	r.Post("/register", userController.RegisterUser)
+	r.Post("/login", userController.LoginUser)
 }
