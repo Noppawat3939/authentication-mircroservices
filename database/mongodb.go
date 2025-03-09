@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,7 +13,7 @@ var DB *mongo.Client
 
 func ConnectMongo(uri string) {
 	if uri == "" {
-		log.Fatal("Mongo URI is valid")
+		panic("Mongo URI is valid")
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -22,13 +21,7 @@ func ConnectMongo(uri string) {
 
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
-		log.Fatal("MongoDB connection failed", err)
-	}
-
-	err = client.Ping(ctx, nil)
-
-	if err != nil {
-		log.Fatal("MongoDB ping error", err)
+		panic(err)
 	}
 
 	fmt.Println("✅ Connected to MongoDB")
@@ -36,6 +29,6 @@ func ConnectMongo(uri string) {
 	DB = client
 }
 
-func GetCollection(dbName, collectionName string) *mongo.Collection {
-	return DB.Database(dbName).Collection(collectionName)
+func GetCollection(dbName, collName string) *mongo.Collection {
+	return DB.Database(dbName).Collection(collName)
 }

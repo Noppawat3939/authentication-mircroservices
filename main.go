@@ -22,6 +22,7 @@ func main() {
 	api := app.Group("/api/v1")
 
 	routes.JwtRoutes(api)
+	routes.UserRoutes(api)
 	routes.CheckRoute(api)
 	routes.NotFoundRoute(app)
 
