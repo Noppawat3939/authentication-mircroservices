@@ -2,3 +2,4 @@ app:
   port: 8000
   jwt_secret: "JwT51970ef657bde5bbde47479048c011ddMicr0Serv1cE"
   jwt_refresh_secret: "JwT71bcf97c94f2fd9de0b7355058405067b5ba37c4868cd954178809ecba155ca5Micr0Serv1cE"
+  mongo_db_uri: "mongodb+srv://auto-go:PAH3lotEoFgSP6nn@auth-go.21tuh.mongodb.net/?retryWrites=true&w=majority&appName=auth-go"
