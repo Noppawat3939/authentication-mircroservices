@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"auth-microservice/app/services"
+	s "auth-microservice/app/services"
 	r "auth-microservice/internal/response"
 	"auth-microservice/models"
 	"os"
@@ -26,14 +26,14 @@ func GetJwtToken(c *fiber.Ctx) error {
 	}
 
 	delete(body, "expired_hour")
-	services.GenerateNewToken(body, expiredHour)
+	s.GenerateNewToken(body, expiredHour)
 
-	token, err := services.GenerateNewToken(body, expiredHour)
+	token, err := s.GenerateNewToken(body, expiredHour)
 	if err != nil {
 		return r.Error(c, fiber.StatusInternalServerError, "could not generate token")
 	}
 
-	refresh, err := services.GenerateRefreshToken(body)
+	refresh, err := s.GenerateRefreshToken(body)
 	if err != nil {
 		return r.Error(c, fiber.StatusInternalServerError, "could not generate refresh_token")
 	}
@@ -56,7 +56,7 @@ func VerifyToken(c *fiber.Ctx) error {
 
 	tokenString, secret := extractTokenFromBody(body)
 
-	valid, claims, err := services.ValidateToken(tokenString, secret)
+	valid, claims, err := s.ValidateToken(tokenString, secret)
 
 	if !valid {
 		return r.Error(c, fiber.StatusUnauthorized, err)
