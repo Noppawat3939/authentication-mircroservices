@@ -45,5 +45,6 @@ func (uc *UserController) RegisterUser(c *fiber.Ctx) error {
 }
 
 func (uc *UserController) LoginUser(c *fiber.Ctx) error {
+	// todo handle login
 	return r.Success(c, nil)
 }
