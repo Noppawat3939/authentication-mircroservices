@@ -46,3 +46,37 @@ func (s *UserService) RegisterUser(user *models.User) (*models.User, error) {
 
 	return user, nil
 }
+
+func (s *UserService) LoginUser(user *models.User) (*models.User, error) {
+	foundUser, err := s.userRepo.FindByEmail(user.Email)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if foundUser != nil {
+		return nil, errors.New("email or password invalid")
+	}
+
+	passwordIsValid, err := verifyPassword(user.Password, foundUser.Password)
+
+	if err != nil {
+		return nil, errors.New("email or password invalid")
+	}
+
+	if !passwordIsValid {
+		return nil, errors.New("email or password invalid")
+	}
+
+	return foundUser, nil
+}
+
+func verifyPassword(userPassword string, hashedPassword string) (bool, error) {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(userPassword))
+
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}

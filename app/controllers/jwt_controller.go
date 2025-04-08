@@ -26,7 +26,6 @@ func GetJwtToken(c *fiber.Ctx) error {
 	}
 
 	delete(body, "expired_hour")
-	s.GenerateNewToken(body, expiredHour)
 
 	token, err := s.GenerateNewToken(body, expiredHour)
 	if err != nil {
